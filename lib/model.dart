@@ -1,30 +1,44 @@
 enum Sexo {MASCULINO, FEMININO}
 
-class Pessoa{
+class Pessoa {
   String? nome;
   String? cpf;
   DateTime? nascimento;
-  int? idade;
   Sexo? sexo;
-  double? salario;
-  bool? programador;
+
+  int? getIdade(){
+    if (nascimento == null) {
+      return null;
+    }
+    final hoje = DateTime.now();
+    final idade = hoje.difference(nascimento!);
+    return idade.inDays ~/ 365;
+  }
 
   @override
   String toString() {
-    return "{nome= $nome, cpf= $cpf, nascimento= $nascimento, idade= $idade,"
-        "sexo= $sexo, salario= $salario, programador= $programador}";
+    return "{nome= $nome, cpf= $cpf, nascimento= $nascimento, idade= ${getIdade()},"
+        "sexo= $sexo}";
   }
 }
 
+  class Programador extends Pessoa{
+    double? salario;
+
+    @override
+    String toString() {
+      return "{nome= $nome, cpf= $cpf, nascimento= $nascimento, idade= $idade,"
+          "sexo= $sexo, salario= $salario}";
+    }
+  }
+
+
 void mainEntiedades(){
-  Pessoa pessoa = Pessoa();
+  Pessoa pessoa = Programador();
   pessoa.nome = 'Willian';
   pessoa.nascimento = DateTime(2000,13,10);
-  pessoa.idade = 21;
   pessoa.sexo = Sexo.MASCULINO;
-  pessoa.salario = 2000.0;
-  pessoa.programador = true;
-
+  // pessoa.salario = 2000.0;
   print(pessoa.toString());
 }
 
