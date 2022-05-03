@@ -1,5 +1,6 @@
+import 'dart:io';
+
 import 'package:introducao_flutter/model.dart';
-import 'dart:math';
 
 class Pessoa {
   String? nome;
@@ -19,52 +20,82 @@ class NotaFiscal {
 
   NotaFiscal({this.numero, this.emissao, this.cliente, this.enderecoEntrega});
 
-  double getValorTotal() {
-    double total = 0.0;
-    for (ItemNF item in itens) {
-      total += item.getValorTotal();
-    }
-    return total;
+  // Future<double> getValorTotal() async {
+  //   print('Calculando o valor da NF...');
+  //   sleep(const Duration(seconds: 2));
+  //   double total = 0.0;
+  //   for (ItemNF item in itens) {
+  //     total += item.getValorTotal();
+  //   }
+  //   return total;
+  // }
+
+    getValorTotal()  {
+    return itens.map((e) => e.getValorTotal()).reduce((a, b) => a + b);
   }
+
+  // calcularTotalDescontos() {
+  //   double desconto = 0.0;
+  //   for (int i = 0; i < itens.length; i++) {
+  //     desconto += itens[i].desconto;
+  //   }
+  //   return desconto;
+  // }
 
   calcularTotalDescontos() {
-    double desconto = 0.0;
-    for (int i = 0; i < itens.length; i++) {
-      desconto += itens[i].desconto;
-    }
-    return desconto;
+    return itens.map((e) => e.desconto).reduce((a, b) => a - b);
   }
+
+  // calcularTotalAcrescimos() {
+  //   double acrescimo = 0.0;
+  //   for (int i = 0; i > itens.length; i++) {
+  //     acrescimo += itens[i].desconto;
+  //   }
+  //   return acrescimo;
+  // }
 
   calcularTotalAcrescimos() {
-    double acrescimo = 0.0;
-    for (int i = 0; i > itens.length; i++) {
-      acrescimo += itens[i].desconto;
-    }
-    return acrescimo;
+    return itens.map((e) => e.acrescimo).reduce((a, b) => a + b);
   }
 
-  ItemNF? getProdutoMaisBarato() {
-    ItemNF? itemMaisBarato;
-    for (ItemNF item in itens) {
-      if (itemMaisBarato == null) {
-        itemMaisBarato = item;
-      } else if (item.getValorTotal() < itemMaisBarato.getValorTotal()) {
-        itemMaisBarato = item;
-      }
-    }
-    return itemMaisBarato;
+  // ItemNF? getProdutoMaisBarato() {
+  //   ItemNF? itemMaisBarato;
+  //   for (ItemNF item in itens) {
+  //     if (itemMaisBarato == null) {
+  //       itemMaisBarato = item;
+  //     } else if (item.getValorTotal() < itemMaisBarato.getValorTotal()) {
+  //       itemMaisBarato = item;
+  //     }
+  //   }
+  //   return itemMaisBarato;
+  // }
+
+  getProdutoMaisBarato() {
+    return itens.reduce((a, b) => a.getValorTotal() < b.getValorTotal() ? a : b);
   }
 
-  ItemNF? getProdutoMaisCaro() {
-    ItemNF? itemMaisBarato;
-    for (ItemNF item in itens) {
-      if (itemMaisBarato == null) {
-        itemMaisBarato = item;
-      } else if (item.getValorTotal() > itemMaisBarato.getValorTotal()) {
-        itemMaisBarato = item;
-      }
-    }
-    return itemMaisBarato;
+  // ItemNF? getProdutoMaisCaro() {
+  //   ItemNF? itemMaisBarato;
+  //   for (ItemNF item in itens) {
+  //     if (itemMaisBarato == null) {
+  //       itemMaisBarato = item;
+  //     } else if (item.getValorTotal() > itemMaisBarato.getValorTotal()) {
+  //       itemMaisBarato = item;
+  //     }
+  //   }
+  //   return itemMaisBarato;
+  // }
+
+  getProdutoMaisCaro() {
+    return itens.reduce((a, b) => a.getValorTotal() > b.getValorTotal() ? a : b);
+  }
+
+  bool possuiDesconto(){
+    return itens.any((e) => e.desconto > 0);
+  }
+
+  List<ItemNF> itensComDesconto(){
+    return itens.where((e) => e.desconto > 0).toList();
   }
 
   ItemNF addItem(
@@ -72,6 +103,13 @@ class NotaFiscal {
       required valor,
       double desconto = 0.0,
       double acrescimo = 0.0}) {
+    if(valor == 0.0){
+      throw Exception('Valor não pode ser zero');
+    }
+    if (produto == ''){
+
+      throw Exception('Produto precisa ser informado.');
+    }
     ItemNF item = ItemNF(
         produto: produto,
         valor: valor,
@@ -80,6 +118,10 @@ class NotaFiscal {
         acrescimo: acrescimo);
     itens.add(item);
     return item;
+  }
+
+  String getStrItens(){
+      return itens.map((i) => "${i.numSeq}: ${i.produto}").join(", ");
   }
 }
 
@@ -114,8 +156,14 @@ void mainNotaFiscal() {
       enderecoEntrega: 'Rua 7 de Setembro',
       numero: 1202);
   nota.addItem(produto: 'Notebook', valor: 1000.0, acrescimo: 100);
-  nota.addItem(produto: 'Teclado', valor: 200.0, acrescimo: 1500);
-  print('Valor total NF = ${nota.getValorTotal()}');
-  print('Produto mais barato = ${nota.getProdutoMaisBarato()}');
-  print('Produto mais caro = ${nota.getProdutoMaisCaro()}');
+  nota.addItem(produto: 'Teclado', valor: 200.0, desconto: 1500);
+  // double valorTotal = await nota.getValorTotal();
+  // print('Produto mais barato = ${nota.getProdutoMaisBarato()}');
+  // print('Produto mais caro = ${nota.getProdutoMaisCaro()}');
+  //
+  // nota.getValorTotal().then((value){
+  //   double valorTotal = value;
+  //   print('Valor total da NF = ${valorTotal}');
+  // });
+  print('Possui desconto = ${nota.itensComDesconto()}');
 }
